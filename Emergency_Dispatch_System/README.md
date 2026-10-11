@@ -26,6 +26,6 @@ Programul citește dintr-un fișier o listă de comenzi și reacționează la el
 * Funcții de afișare (`SHOW_UNIT`, `SHOW_INCIDENT`, `SHOW_INTERVENTIONS`) - Arată starea curentă a echipajelor și a urgențelor din sistem.
 
 ## 📂 Organizarea codului
-* `tema.c` - Fișierul principal care citește comenzile și le execută.
+* `main.c` - Fișierul principal care citește comenzile și le execută.
 * `tasks.h` - Aici se află funcțiile pentru comenzi (Dispatch, Undo, Solved etc.).
 * `structuri.h` - Aici am definit structurile de date (Echipaj, Incident, Intervenție) și funcțiile de creare/ștergere a lor.
