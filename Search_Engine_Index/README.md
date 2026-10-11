@@ -15,7 +15,7 @@ Pentru a garanta un timp de execuție optim, sistemul evită căutările liniare
 * **Interogare (Query):** 
   * `FIND`: Găsește toate fișierele care conțin un anumit cuvânt.
   * `TOPK`: Returnează cele mai relevante `K` fișiere pentru un cuvânt dat.
-  * `PREFIX` (Bonus): Returnează fișierele care conțin orice cuvânt ce începe cu un anumit prefix, parcurgând subarborele corespunzător.
+  * `PREFIX`: Returnează fișierele care conțin orice cuvânt ce începe cu un anumit prefix, parcurgând subarborele corespunzător.
 * `PRINT`: Afișează conținutul complet al indexului în ordine lexicografică.
 
 ## 📂 Structura Proiectului
