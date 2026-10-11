@@ -1,5 +1,3 @@
-/*Vizdoaga Emilia-Ioana - 314CD*/
-
 #ifndef PREFIX_H
 #define PREFIX_H
 
