@@ -1,5 +1,3 @@
-/*Vizdoaga Emilia-Ioana - 314CD*/
-
 #ifndef LISTA_H
 #define LISTA_H
 
@@ -7,22 +5,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-
-typedef struct File{
-    char *id; // retinem id-ul
-    int scor; // retinem scorul
-    struct File* next; // next file
-    struct File* prev; //  prev file
+typedef struct File {
+    char *id;
+    int scor;
+    struct File* next;
+    struct File* prev;
 } File;
 
-typedef struct ListFile{
-    struct File* first; // primul fisier din lista
-    struct File* last; // ultimul fisier din lista
+typedef struct ListFile {
+    struct File* first;
+    struct File* last;
 } ListFile;
 
-
-// crearea unei liste
+/* Initialize an empty doubly linked list for files */
 ListFile* createListFile(void)
 {
     ListFile *list = malloc(sizeof(ListFile));
@@ -31,26 +26,26 @@ ListFile* createListFile(void)
     return list;
 }
 
-// crearea unui fisier
+/* Allocate and initialize a new file node */
 File *createFile(char *id, int scor)
 {
-	File *new= malloc(sizeof(File));
+	File *new = malloc(sizeof(File));
 	if (new == NULL) {
 		return NULL;
 	}
-	new->scor = scor; // retinem scorul
+	new->scor = scor;
 	new->id = malloc(strlen(id) + 1);
 	if (new->id == NULL) {
         free(new);
         return NULL;
     }
-    strcpy(new->id, id); // retinem id-ul
+    strcpy(new->id, id);
 	new->next = NULL;
 	new->prev = NULL;
 	return new;
 }
 
-// adaugarea fisierului la finalul listei
+/* Insert a new file at the end of the list */
 void insertFile(ListFile *list, char *id, int scor)
 {
 	File *new_file = createFile(id, scor);
@@ -64,7 +59,7 @@ void insertFile(ListFile *list, char *id, int scor)
 	list->last = new_file;
 }
 
-// verificarea daca fisierul exista
+/* Check if a file with the given ID exists in the list */
 int containsFile(ListFile *list, char *id)
 {
 	if (list == NULL || list->first == NULL) {
@@ -83,7 +78,7 @@ int containsFile(ListFile *list, char *id)
 	return 0;
 } 
 
-// gasirea adresei fisierului cu id ul cautat
+/* Find and return the pointer to the file with the given ID */
 File *findFile(ListFile *list, char *id)
 {
 	if (list == NULL || list->first == NULL) {
@@ -102,14 +97,14 @@ File *findFile(ListFile *list, char *id)
 	return 0;
 }
 
-// eliminarea fisierului cu id ul cautat
+/* Remove a specific file from the list and free its memory */
 void deleteFile(ListFile *list, File *delete)
 {
-// lista este goala
 	if (list == NULL) {
 		return;
 	}
-// lista are un singur fisier
+    
+    // Single node case
 	if (list->first == list->last && list->first == delete) {
 		list->first = NULL;
 		list->last = NULL;
@@ -117,7 +112,8 @@ void deleteFile(ListFile *list, File *delete)
 		free(delete);
 		return;
 	}
-// fisierul este primul
+    
+    // First node case
 	if (list->first == delete) {
 		list->first = delete->next;
 		delete->next->prev = NULL;
@@ -125,7 +121,8 @@ void deleteFile(ListFile *list, File *delete)
 		free(delete);
 		return;
 	}
-// fisierul este ultimul
+    
+    // Last node case
 	if (list->last == delete) {
 		list->last = delete->prev;
 		delete->prev->next = NULL;
@@ -133,7 +130,8 @@ void deleteFile(ListFile *list, File *delete)
 		free(delete);
 		return;
 	}
-// fisierul este la mijloc
+    
+    // Middle node case
 	delete->prev->next = delete->next;
 	delete->next->prev = delete->prev;
 	free(delete->id);
@@ -141,7 +139,7 @@ void deleteFile(ListFile *list, File *delete)
 	return;
 }
 
-// eliberarea memoriei listei cu fisiere
+/* Free all memory allocated for the file list */
 void destroyListFile(ListFile* list)
 {
 	if(list == NULL) {
