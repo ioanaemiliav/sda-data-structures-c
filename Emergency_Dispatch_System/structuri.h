@@ -1,5 +1,3 @@
-/*Vizdoaga Emilia-Ioana - 314CD*/
-
 #ifndef STRUCTURI_H
 #define STRUCTURI_H
 
@@ -7,11 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+// --- EMERGENCY UNITS MANAGEMENT ---
 
-
-// SALVAREA ECHIPAJELOR
-
-// struct init - echipajele salvate in lista
 typedef struct Echipaj {
 	int id;
 	char type;
@@ -20,13 +15,12 @@ typedef struct Echipaj {
 	struct Echipaj *prev;
 } Echipaj;
 
-// lista in care memorez echipajele
 typedef struct ListEchipaje {
 	Echipaj *first;
 	Echipaj *last;
 } ListEchipaje;
 
-// creez lista de echipaje
+/* Initialize an empty doubly linked list for emergency units */
 ListEchipaje *createListEchipaje(void)
 {
 	ListEchipaje *list = malloc(sizeof(ListEchipaje));
@@ -35,7 +29,7 @@ ListEchipaje *createListEchipaje(void)
 	return list;
 }
 
-// creez un echipaj
+/* Allocate and initialize a new emergency unit */
 Echipaj *createEchipaj(int id, char type)
 {
 	Echipaj *new_echipaj = malloc(sizeof(Echipaj));
@@ -50,7 +44,7 @@ Echipaj *createEchipaj(int id, char type)
 	return new_echipaj;
 }
 
-// adaugarea echipajului la finalul listei
+/* Insert a new unit at the end of the list */
 void insertEchipaj(ListEchipaje *list, int id, char type)
 {
 	Echipaj *new_echipaj = createEchipaj(id, type);
@@ -64,7 +58,7 @@ void insertEchipaj(ListEchipaje *list, int id, char type)
 	list->last = new_echipaj;
 }
 
-// eliberarea memoriei listei cu echipaje
+/* Free all memory allocated for the units list */
 void destroyListEchipaje(ListEchipaje* list)
 {
 	if(list == NULL) {
@@ -79,19 +73,19 @@ void destroyListEchipaje(ListEchipaje* list)
 	free(list);
 }
 
-// SALVAREA INCIDENTELOR
 
-// struct incident - incidente salvate in lista
+// --- INCIDENTS MANAGEMENT ---
+
 typedef struct Incident {
 	int id;
-	char priority[7];     //   "high"/"medium"/"low"
+	char priority[7];     // "high", "medium", or "low"
 	char *description;
-	char status[11];      //   "queued"/"intervened"/"solved"
+	char status[11];      // "queued", "intervened", or "solved"
 	struct Incident *next;
 	struct Incident *prev;
 } Incident;
 
-// incident fictiv-folosit si ca santinela
+/* Create a dummy incident to serve as a sentinel node */
 Incident *fictivIncident(void)
 {
 	Incident *incident_fictiv = malloc(sizeof(Incident));
@@ -110,12 +104,11 @@ Incident *fictivIncident(void)
 	return incident_fictiv;
 }
 
-// lista in care pastrez santinela
 typedef struct ListIncidente {
 	Incident *santinela; 
 } ListIncidente;
 
-// lista cu incidente in care am memorat incidentul fictiv
+/* Initialize a circular doubly linked list for incidents with a sentinel */
 ListIncidente *createListIncidente(void)
 {
 	ListIncidente *list = malloc(sizeof(ListIncidente));
@@ -125,7 +118,7 @@ ListIncidente *createListIncidente(void)
 	return list;
 }
 
-// creez un incident
+/* Allocate and initialize a new incident */
 Incident *createIncident(int id, char *priority, char *descrip)
 {
 	Incident *new_incident = malloc(sizeof(Incident));
@@ -144,19 +137,20 @@ Incident *createIncident(int id, char *priority, char *descrip)
 	return new_incident;
 }
 
-// adaugarea incidentului la finalul listei
+/* Insert an incident at the end of the circular list */
 void insertIncident(ListIncidente *list, int id, char *priority,
 					char *description)
 {
 	Incident *new_incident = createIncident(id, priority, description);
-	Incident *last = list->santinela->prev; // ultimul incident memorat
+	Incident *last = list->santinela->prev; 
+	
 	new_incident->next = list->santinela;
 	new_incident->prev = last;
 	last->next = new_incident;
 	list->santinela->prev = new_incident;
 }
 
-// eliberez memoria pentru lista de incidente
+/* Free all memory allocated for the incidents list */
 void destroyListIncident(ListIncidente *list)
 {
 	if (list == NULL) {
@@ -164,7 +158,6 @@ void destroyListIncident(ListIncidente *list)
 	}
 	Incident *current = list->santinela->next;
 	while (current != list->santinela) {
-// se parcurg toate incidentele pana la santinela
 		if (current->description != NULL) {
 			free(current->description);
 		}
@@ -179,24 +172,21 @@ void destroyListIncident(ListIncidente *list)
 	free(list);
 }
 
-// INTERVENTIILE
 
-// struct intervention - interventiile salvate in lista
+// --- INTERVENTIONS MANAGEMENT ---
+
 typedef struct Interventie {
-// struct incident *incident - detalii incident
 	Incident *incident;
-// struct unit *unit - detalii echipaj de interventie
 	Echipaj *echipaj;
 	struct Interventie *next;
 	struct Interventie *prev;
 } Interventie;
 
-// lista in care pastrez santinela
 typedef struct ListInterventii {
 	Interventie *santinela; 
 } ListInterventii;
 
-// creez o interventie
+/* Allocate a new intervention node */
 Interventie *createInterventie(Incident *incident, Echipaj *echipaj)
 {
 	Interventie *new_interventie = malloc(sizeof(Interventie));
@@ -210,7 +200,7 @@ Interventie *createInterventie(Incident *incident, Echipaj *echipaj)
 	return new_interventie;
 }
 
-// creez lista cu interventii
+/* Initialize a circular doubly linked list for interventions */
 ListInterventii *createListInterventii(void)
 {
 	ListInterventii *list = malloc(sizeof(ListInterventii));
@@ -220,20 +210,20 @@ ListInterventii *createListInterventii(void)
 	return list;
 }
 
-// adaugarea interventiei la finalul listei
+/* Insert an intervention at the end of the circular list */
 void insertInterventie(ListInterventii *list, Incident *incident,
 						Echipaj *echipaj)
 {
 	Interventie *new_interventie = createInterventie(incident, echipaj);
-// ultima interventie memorata
 	Interventie *last = list->santinela->prev;
+	
 	new_interventie->next = list->santinela;
 	new_interventie->prev = last;
 	last->next = new_interventie;
 	list->santinela->prev = new_interventie;
 }
 
-// stergerea unei interventii din lista
+/* Remove a specific intervention from the list */
 void deleteInterventie(ListInterventii *list, Interventie *interventie)
 {
 	if (list->santinela->next == list->santinela) {
@@ -244,7 +234,7 @@ void deleteInterventie(ListInterventii *list, Interventie *interventie)
 	free(interventie);
 }
 
-// eliberez memoria pentru lista de interventii
+/* Free all memory allocated for the interventions list */
 void destroyListInterventii(ListInterventii *list)
 {
 	if (list == NULL) {
@@ -252,7 +242,6 @@ void destroyListInterventii(ListInterventii *list)
 	}
 	Interventie *current = list->santinela->next;
 	while (current != list->santinela) {
-// se parcurg toate incidentele pana la santinela
 		Interventie *delete = current;
 		current = current->next;
 		free(delete);
@@ -261,22 +250,21 @@ void destroyListInterventii(ListInterventii *list)
 	free(list);
 }
 
-// COZILE DE ASTEPTARE
 
-// memorez pointerul catre incidentul care asteapta
+// --- INCIDENT WAITING QUEUES ---
+
 typedef struct IncidentAsteptare {
 	Incident *incident;
 	struct IncidentAsteptare *next;
-}IncidentAsteptare;
+} IncidentAsteptare;
 
-// cozile in care memorez incidentul in functie de gravitatea lui
 typedef struct QueueAsteptare {
 	IncidentAsteptare *front;
 	IncidentAsteptare *rear;
 	long size;
-}QueueAsteptare;
+} QueueAsteptare;
 
-// creez coada de asteptare
+/* Initialize an empty queue for waiting incidents */
 QueueAsteptare* createQueueAsteptare(void)
 {
 	QueueAsteptare *coada= malloc(sizeof(QueueAsteptare));
@@ -286,7 +274,7 @@ QueueAsteptare* createQueueAsteptare(void)
 	return coada;
 }
 
-// adaug incidentului la finalul cozii
+/* Enqueue an incident at the rear */
 void enqueueAsteptare(QueueAsteptare *q, Incident *incident)
 {
 	IncidentAsteptare *new_incident = malloc(sizeof(IncidentAsteptare));
@@ -303,7 +291,7 @@ void enqueueAsteptare(QueueAsteptare *q, Incident *incident)
 	q->rear = new_incident;
 }
 
-// adaugarea incidentului la inceputul cozii
+/* Enqueue an incident at the front (used for UNDO operations) */
 void enqueueAsteptareInceput(QueueAsteptare *q, Incident *incident)
 {
 	IncidentAsteptare *new_incident = malloc(sizeof(IncidentAsteptare));
@@ -320,7 +308,7 @@ void enqueueAsteptareInceput(QueueAsteptare *q, Incident *incident)
 	q->front = new_incident;
 }
 
-// stergerea incidentului de la inceputul cozii
+/* Dequeue an incident from the front */
 void dequeueAsteptare(QueueAsteptare* q)
 {
 	if (q->front == NULL) {
@@ -335,7 +323,7 @@ void dequeueAsteptare(QueueAsteptare* q)
 	}
 }
 
-// eliberez memoria pentru coada de asteptare
+/* Free all memory allocated for the waiting queue */
 void destroyQueueAsteptare(QueueAsteptare *q)
 {
 	if (q == NULL) {
@@ -350,23 +338,21 @@ void destroyQueueAsteptare(QueueAsteptare *q)
 	free(q);
 }
 
-// COADA DE DISPONIBILITATE
 
+// --- UNITS AVAILABILITY QUEUE ---
 
-// memorez pointerul catre echipajul disponibil
 typedef struct EchipajDisponibil {
 	Echipaj *echipaj;
 	struct EchipajDisponibil *next;
-}EchipajDisponibil;
+} EchipajDisponibil;
 
-// cozile in care memorez incidentul in functie de gravitatea lui
 typedef struct QueueDisponibilitate {
 	EchipajDisponibil *front;
-	EchipajDisponibil*rear;
+	EchipajDisponibil *rear;
 	long size;
-}QueueDisponibilitate;
+} QueueDisponibilitate;
 
-// creez o coada pentru echipajele disponibile
+/* Initialize an empty queue for available emergency units */
 QueueDisponibilitate* createQueueDisponibilitate(void)
 {
 	QueueDisponibilitate *coada= malloc(sizeof(QueueDisponibilitate));
@@ -376,7 +362,7 @@ QueueDisponibilitate* createQueueDisponibilitate(void)
 	return coada;
 }
 
-// adaugarea echipajului disponibil la finalul cozii
+/* Enqueue an available unit at the rear */
 void enqueueDisponibilitate(QueueDisponibilitate *q, Echipaj *echipaj)
 {
 	EchipajDisponibil *new_echipaj = malloc(sizeof(EchipajDisponibil));
@@ -393,7 +379,7 @@ void enqueueDisponibilitate(QueueDisponibilitate *q, Echipaj *echipaj)
 	q->rear = new_echipaj;
 }
 
-// stergerea echipajului disponibil de la inceputul cozii
+/* Dequeue a unit from the front (when dispatched) */
 void dequeueDisponibilitate(QueueDisponibilitate* q)
 {
 	if (q->front == NULL) {
@@ -408,7 +394,7 @@ void dequeueDisponibilitate(QueueDisponibilitate* q)
 	}
 }
 
-// eliberez memoria pentru echipajul disponibil
+/* Free all memory allocated for the availability queue */
 void destroyQueueDisponibilitate(QueueDisponibilitate *q)
 {
 	if (q == NULL) {
@@ -423,21 +409,20 @@ void destroyQueueDisponibilitate(QueueDisponibilitate *q)
 	free(q);
 }
 
-// STIVA PENTRU DISPATCH
 
-// memorez pointerul catre interventie si echipaj
+// --- DISPATCH HISTORY STACK ---
+
 typedef struct Dispatch {
 	Interventie *interventie;
 	struct Dispatch *next;
 } Dispatch;
 
-// stiva in care se memoreaza interventiile care au fost demarate
 typedef struct StackDispatch {
 	struct Dispatch *head;  
 	long size;
 } StackDispatch;
 
-// creez stiva cu interventiile demarate
+/* Initialize an empty stack to track dispatch history */
 StackDispatch *createStack(void)
 {
 	StackDispatch *stiva = malloc(sizeof(StackDispatch));
@@ -446,7 +431,7 @@ StackDispatch *createStack(void)
 	return stiva;
 }
 
-// memorez o noua interventie in stiva
+/* Push a new dispatch event onto the stack */
 void pushDispatch(StackDispatch *stiva, Interventie *interventie)
 {
 	Dispatch *add = malloc(sizeof(Dispatch));
@@ -462,27 +447,27 @@ void pushDispatch(StackDispatch *stiva, Interventie *interventie)
 	stiva->size++;
 }
 
-// elimin ultima interventie memorata in stiva
+/* Pop the most recent dispatch event from the stack */
 void popDispatch(StackDispatch *stiva)
 {
 	if (stiva == NULL || stiva->size == 0) {
 		return;
 	}
-	Dispatch *delete= stiva->head;
+	Dispatch *delete = stiva->head;
 	stiva->head = delete->next;
 	free(delete);
 	stiva->size--;
 }
 
-// eliberez memoria alocata stivei pentru dispatch
+/* Free all memory allocated for the dispatch stack */
 void destroyStackDispatch(StackDispatch *stiva)
 {
 	if (stiva == NULL) {
 		return;
 	}
-	Dispatch *aux= stiva->head;
+	Dispatch *aux = stiva->head;
 	for (int i = 1; i < stiva->size; i++) {
-		Dispatch*delete = aux;
+		Dispatch *delete = aux;
 		aux = aux->next;
 		free(delete);
 	}
