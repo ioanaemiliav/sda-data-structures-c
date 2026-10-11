@@ -1,5 +1,3 @@
-/*Vizdoaga Emilia-Ioana - 314CD*/
-
 #ifndef TASKS_H
 #define TASKS_H
 
@@ -11,113 +9,118 @@
 #include "max-heap.h"
 #include "bonus.h"
 
+/* Parse input and add a new file with its keywords to the index */
 void add(char *buff, FILE *fout, ListFile *listaFisiere, KeyTree treeCuvinte)
 {
-    char *add = strtok(buff, " "); // se retine "ADD"
+    char *add = strtok(buff, " ");
     if (add == NULL) {
         return;
     }
-    char *id = strtok(NULL, " "); // retinem id-ul
-    if (containsFile(listaFisiere, id) == 1) { // fisierul exista deja
+    char *id = strtok(NULL, " ");
+    if (containsFile(listaFisiere, id) == 1) {
         fprintf(fout, "EXISTS\n");
         return;
     }
-    fprintf(fout, "OK\n"); // fisierul nu exista
-    char *scor_string = strtok(NULL, " "); // retinem scorul ca string
-    int scor = atoi(scor_string); // retinem scorul ca int
-    insertFile(listaFisiere, id, scor); // adaugam fisierul in lista
-    char *nr_cuvinte_string = strtok(NULL, " "); // retinem nr de cuvinte ca string
-    int nr_cuvinte = atoi(nr_cuvinte_string); // retinem nr de cuvinte ca int
+    fprintf(fout, "OK\n");
+    
+    char *scor_string = strtok(NULL, " ");
+    int scor = atoi(scor_string);
+    insertFile(listaFisiere, id, scor);
+    
+    char *nr_cuvinte_string = strtok(NULL, " ");
+    int nr_cuvinte = atoi(nr_cuvinte_string);
+    
     for (int i = 0; i < nr_cuvinte; i++) {
-        char *cuvant = strtok(NULL, " "); // retinem cate un cuvant
+        char *cuvant = strtok(NULL, " ");
         insertTree(treeCuvinte, cuvant, listaFisiere->last);
     }
 }
 
+/* Delete a file from the index and clean up any dangling Trie nodes */
 void del(char *buff, FILE *fout, ListFile *listaFisiere, KeyTree treeCuvinte)
 {
-    char id[50]; // retinem id-ul
+    char id[50];
     sscanf(buff, "DEL %s", id);
-    if (containsFile(listaFisiere, id) == 0) { // fisierul nu exista
+    if (containsFile(listaFisiere, id) == 0) {
         fprintf(fout, "NOT FOUND\n");
         return;
     }
-    fprintf(fout, "OK\n"); // fisierul exista
-// retinem adresa fisierului cu id-ul cautat
+    fprintf(fout, "OK\n");
+    
     File *delete = findFile(listaFisiere, id);
-// stergem fisieul din referinta si literele in plus
     deleteRefFile(treeCuvinte->child, delete);
-// stergem fisierul din lista
     deleteFile(listaFisiere, delete);
 }
 
+/* Add a new keyword to an existing file in the index */
 void addkw(char *buff, FILE *fout, ListFile *listaFisiere, KeyTree treeCuvinte)
 {
-    char *addkw = strtok(buff, " "); // se retine "ADDKW"
+    char *addkw = strtok(buff, " ");
     if (addkw == NULL) {
         return;
     }
-    char *id = strtok(NULL, " "); // retinem id-ul
-    if (containsFile(listaFisiere, id) == 0) { // fisierul nu exista
+    char *id = strtok(NULL, " ");
+    if (containsFile(listaFisiere, id) == 0) {
         fprintf(fout, "NOT FOUND\n");
         return;
     }
-// fisierul exista
-    char *cuvant = strtok(NULL, " "); // retinem cuvantul
+    
+    char *cuvant = strtok(NULL, " ");
     fprintf(fout, "OK\n");
-// retinem adresa fisierului cu id-ul cautat
+    
     File *fisier = findFile(listaFisiere, id);
-// verificam daca fisierul exista deja in lista de referinta a cuvantului
+    
     if (containsFileRef(findKeyWord(treeCuvinte, cuvant), fisier) == 1) {
         return;
     }
-// inseram cuvantul in arbore/ fisierul in lista de referinta a cuvantului
     insertTree(treeCuvinte, cuvant, fisier);
 }
 
+/* Remove a specific keyword from a file and update the Trie structure */
 void delkw(char *buff, FILE *fout, ListFile *listaFisiere, KeyTree treeCuvinte)
 {
-    char *delkw = strtok(buff, " "); // se retine "DELKW"
+    char *delkw = strtok(buff, " ");
     if (delkw == NULL) {
         return;
     }
-    char *id = strtok(NULL, " "); // retinem id-ul
-    if (containsFile(listaFisiere, id) == 0) { // fisierul nu exista
+    char *id = strtok(NULL, " ");
+    if (containsFile(listaFisiere, id) == 0) {
         fprintf(fout, "NOT FOUND\n");
         return;
     }
-// fisierul exista
-    char *cuvant = strtok(NULL, " "); // retinem cuvantul
+    
+    char *cuvant = strtok(NULL, " ");
     fprintf(fout, "OK\n");
-// retinem adresa fisierului cu id-ul cautat
+    
     File *delete = findFile(listaFisiere, id);
-// verificam daca fisierul exista in lista de referinta a cuvantului
+    
     if (containsFileRef(findKeyWord(treeCuvinte, cuvant), delete) == 0) {
         return;
     }
-// stergem fisieul din referinta si literele in plus
+    
     deleteKeyWord(findKeyWord(treeCuvinte, cuvant), delete);
-// verificam daca fisierul mai are cuvinte
+    
     if (KeyWordsFile(treeCuvinte, delete) == 0) {
-        deleteFile(listaFisiere, delete); // stergem fisierul din lista
+        deleteFile(listaFisiere, delete);
     }
 }
 
+/* Search the Trie and print all files associated with a specific keyword */
 void find(char *buff, FILE *fout, KeyTree treeCuvinte)
 {
-    char cuvant[100]; // retinem cuvantulul
+    char cuvant[100];
     sscanf(buff, "FIND %s", cuvant); 
-// retinem pointerul catre finalul cuvantului cautat
+    
     KeyTree last_letter = findKeyWord(treeCuvinte, cuvant);
-// verificam daca cuvantul exista in arbore
+    
     if (last_letter == NULL || last_letter->end == 0) {
-        fprintf(fout, "EMPTY\n"); // nu exista cuvantul
+        fprintf(fout, "EMPTY\n");
         return;
     }
-// cuvantul exista in arbore
+    
     fprintf(fout, "%d", last_letter->referinte->size);
-// afisam id-urile fisierelor din lista de referinta a cuvantului
     FileRef *current = last_letter->referinte->first;
+    
     for (int i = 0; i < last_letter->referinte->size; i++) {
         fprintf(fout, " %s", current->file->id);
         current = current->next;
@@ -125,88 +128,92 @@ void find(char *buff, FILE *fout, KeyTree treeCuvinte)
     fprintf(fout, "\n");
 }
 
+/* Retrieve the top K most relevant files for a keyword using a Max-Heap */
 void topk(char *buff, FILE *fout, KeyTree treeCuvinte)
 {
-    char cuvant[100]; // retinem cuvantulul
-    int k; // nr de id-uri afisate
+    char cuvant[100];
+    int k;
     sscanf(buff, "TOPK %s %d", cuvant, &k);
-// retinem pointerul catre finalul cuvantului cautat
+    
     KeyTree last_letter = findKeyWord(treeCuvinte, cuvant);
     if (last_letter == NULL || last_letter->end == 0) {
-        fprintf(fout, "EMPTY\n"); // cuvantul nu exista
+        fprintf(fout, "EMPTY\n");
         return;
     }
+    
     ListRef list = last_letter->referinte;
     FileRef *current = list->first;
-    HeapID heapID = createHeapID(list->size); // crearea heap-ului
-// verificam daca exista toate cele k fisiere de afisat
+    HeapID heapID = createHeapID(list->size);
+    
     if (list->size < k) {
         k = list->size;
     }
-    fprintf(fout, "%d", k); // afisam k-ul
+    
+    fprintf(fout, "%d", k);
     for (int i = 0; i < list->size; i++) {
-// adaugam in heap fiecare scor, respectiv fisier
         insertHeapID(heapID, current->file->scor, current->file);
         current = current->next;
     }
-// afisarea primelor k fisiere din heap
+    
     for (int i = 0; i < k; i++) {
-        fprintf(fout, " %s", heapID->elem[0].fisier->id); // afisam maximul
-        removeMaxHeapID(heapID); // stergem maxim pe care l am afisat
+        fprintf(fout, " %s", heapID->elem[0].fisier->id);
+        removeMaxHeapID(heapID);
     }
     fprintf(fout, "\n");
     destroyHeapID(heapID);
 }
 
+/* Print all indexed keywords and their associated files in lexicographical order */
 void print(FILE *fout, ListFile *listaFisiere, KeyTree treeCuvinte)
 {
-    int capacitate = 100; // cata memorie am alocat cuvantului
-    char *cuvant = malloc(100); // va fi retinut cuvantul_cheie
+    int capacitate = 100;
+    char *cuvant = malloc(100);
     if (cuvant == NULL) {
         return;
     }
-    int nr_print = 0; // contor pentru nr de cuvinte-cheie afisate
-// afisam cuvintele-cheie
+    
+    int nr_print = 0;
     printKeyWords(fout, listaFisiere, treeCuvinte->child, 0, cuvant,
                   &capacitate, &nr_print);
+                  
     if (nr_print == 0) { 
-        fprintf(fout, "EMPTY\n"); // nu s-a afisat nici un cuvant-cheie
+        fprintf(fout, "EMPTY\n");
     }
     free(cuvant);
 }
 
+/* Find and print all files containing keywords that match a given prefix */
 void prefix(char *buff, FILE *fout, KeyTree treeCuvinte)
 {
     char prefix[100];
-    sscanf(buff, "PREFIX %s", prefix); // retinem prefixul
-    // retinem pointerul catre finalul prefixului
+    sscanf(buff, "PREFIX %s", prefix);
+    
     KeyTree last_letter = findKeyWord(treeCuvinte, prefix);
     if (last_letter == NULL) {
-        fprintf(fout, "EMPTY\n"); // prefixul nu exista in arbore
+        fprintf(fout, "EMPTY\n");
         return;
     }
-// crearea listei in care vor fi retinute fisierele
+    
     ListPrefix listaPrefix = createListPrefix();
-// verificam daca prefixul este un cuvant, are lista de referinta
+    
     if (last_letter->end == 1 && last_letter->referinte->size > 0) {
-// adaugam fisierele care sunt referinta pentru cuvintele din radacina
         FileRef *current = last_letter->referinte->first;
         while (current != NULL) {
             insertListPrefix(listaPrefix, current->file);
             current = current->next;
         }
     }
-// adaugam fisierele care sunt referinta
-// pentru cuvintele din subarborele fara radacina
+    
     findFilewithPrefix(listaPrefix, last_letter->child);
     fprintf(fout, "%d", listaPrefix->size);
+    
     FilePrefix *current = listaPrefix->first;
     while (current != NULL) {
         fprintf(fout, " %s",current->file->id);
         current = current->next;
     }
     fprintf(fout, "\n");
-// eliberarea memoriei pentru lista in care au fost retinute fisierele
+    
     destroyListPrefix(listaPrefix);
 }
 
