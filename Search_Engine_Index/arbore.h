@@ -1,5 +1,3 @@
-/*Vizdoaga Emilia-Ioana - 314CD*/
-
 #ifndef ARBORE_H
 #define ARBORE_H
 
@@ -9,27 +7,27 @@
 #include "lista.h"
 
 typedef struct fileRef {
-    File *file; // retinem un pointer catre fisierul din lista
-    struct fileRef *next; // urmatorul pointer la fisier
-    struct fileRef *prev; // anteriorul pointer la fisier
+    File *file; 
+    struct fileRef *next; 
+    struct fileRef *prev; 
 } FileRef;
 
 typedef struct listRef {
-    int size; // numarul de fisiere din lista de referinta
+    int size; 
     FileRef *first;
     FileRef *last;
 } *ListRef;
 
-typedef struct keyTree{
-    char litera; // retinem litera in arbore
-    int end; // retinem daca litera termina un cuvant
-    ListRef referinte ; // daca bool == 1
-    struct keyTree *parent; // parintele nodului
-    struct keyTree *child; // primul copil al nodului (cel mai din stanga)
-    struct keyTree *sibling; // primul frate al nodului de pe acelasi nivel
+typedef struct keyTree {
+    char litera; 
+    int end; 
+    ListRef referinte; 
+    struct keyTree *parent; 
+    struct keyTree *child; 
+    struct keyTree *sibling; 
 } *KeyTree;
 
-// creearea unui nod cu fisierul de referinta
+/* Initialize a new reference node for file tracking */
 FileRef *createFileRef(File *fisier)
 {
     FileRef *file = malloc(sizeof(struct fileRef));
@@ -42,8 +40,9 @@ FileRef *createFileRef(File *fisier)
     return file;
 }
 
-// creearea listei cu pointeri
-ListRef createListRef(void) {
+/* Initialize an empty reference list */
+ListRef createListRef(void) 
+{
     ListRef list = malloc(sizeof(struct listRef));
     if (list == NULL) {
         return list;
@@ -54,14 +53,14 @@ ListRef createListRef(void) {
     return list;
 }
 
-// creearea arborelui cu cuvinte-cheie
+/* Initialize a new Trie node with a given character */
 KeyTree createKeyTree(char letter)
 {
     KeyTree tree = (KeyTree)malloc(sizeof(struct keyTree));
     if (tree == NULL) {
         return NULL;
     }
-    tree->litera = letter; // retinem litera
+    tree->litera = letter;
     tree->end = 0;
     tree->referinte = createListRef();
     tree->parent = NULL;
@@ -70,12 +69,12 @@ KeyTree createKeyTree(char letter)
     return tree;
 }
 
-// adaugarea unui pointer in lista
+/* Insert a file reference into the reference list in lexicographical order */
 void insertListRef(ListRef list, File *fisier)
-{   
-    if (list->size == 0) { // lista este goala
+{    
+    if (list->size == 0) {
         list->first = createFileRef(fisier);
-        list->last = list-> first ;
+        list->last = list->first;
         list->size++;
         return;
     }
@@ -83,21 +82,21 @@ void insertListRef(ListRef list, File *fisier)
     while (current != NULL && strcmp(fisier->id, current->file->id) > 0) {
         current = current->next;
     }
-// current-> pointer la fisierul >= fisierul cautat, dpdv lexicografic 
+    
     if (current != NULL && strcmp(fisier->id, current->file->id) == 0) {
-        return; // fisierul exista deja in lista de referinta
+        return; 
     }
-// crearea structurii cu pointerul catre fisierul cautat
+    
     FileRef *new = createFileRef(fisier);
-    if (current == list->first) { // este primul in lista
+    if (current == list->first) {
         new->next = list->first;
         list->first->prev = new;
         list->first = new;
-    } else if (current == NULL) { // este ultimul in lista
+    } else if (current == NULL) {
         new->prev = list->last;
         list->last->next = new;
         list->last = new;
-    } else { // este la mijloc
+    } else {
         new->next = current;
         new->prev = current->prev;
         current->prev->next = new;
@@ -106,21 +105,21 @@ void insertListRef(ListRef list, File *fisier)
     list->size++;
 }
 
-// inserarea in arbore
+/* Insert a keyword and its associated file into the Trie */
 void insertTree(KeyTree tree, char *cuvant, File *file)
 {
     KeyTree current = tree;
     int len = strlen(cuvant);
     for (int i = 0; i < len; i++) {
         char letter = cuvant[i];
-// arborele curent nu are nici un copil
+        
         if (current->child == NULL) {
             current->child = createKeyTree(letter);
             current->child->parent = current;
             current = current->child;
             continue;
         }
-// litera e la inceput
+        
         if (letter < current->child->litera) {
             KeyTree new = createKeyTree(letter);
             new->sibling = current->child;
@@ -130,7 +129,7 @@ void insertTree(KeyTree tree, char *cuvant, File *file)
             current = new;
             continue;
         }
-// cautam litera in fratii sai
+        
         KeyTree child = current->child;
         int ok = 0;
         while (child != NULL) {
@@ -144,10 +143,10 @@ void insertTree(KeyTree tree, char *cuvant, File *file)
             }
             child = child->sibling;
         }
-        if (ok == 1) { // am gasit litera
+        if (ok == 1) {
             continue;
         }
-        // inseram litera
+        
         KeyTree new = createKeyTree(letter);
         new->sibling = child->sibling;
         new->parent = current;
@@ -159,7 +158,7 @@ void insertTree(KeyTree tree, char *cuvant, File *file)
     insertListRef(current->referinte, file);
 }
 
-// eliminarea literelor din arbore care formeaza un cuvant fara lista de ref
+/* Remove redundant Trie nodes that no longer form valid words or have children */
 void deleteLetter(KeyTree tree)
 {
     if (tree == NULL || tree->parent == NULL || tree->referinte->size != 0
@@ -168,12 +167,12 @@ void deleteLetter(KeyTree tree)
     }
     KeyTree delete = tree;
     tree = tree->parent;
-// daca nu termina un cuvant si nu are copii, se sterge
+    
     while (tree != NULL && delete->end == 0 && delete->child == NULL) {
-        if (tree->child == delete) { // actualizam primul copil al parintelui
+        if (tree->child == delete) {
             tree->child = delete->sibling;
         } else {
-            KeyTree child = tree->child; // il stergem din lista de copii
+            KeyTree child = tree->child; 
             while (child != NULL && child->sibling != delete) {
                 child = child->sibling;
             }
@@ -181,26 +180,25 @@ void deleteLetter(KeyTree tree)
                 child->sibling = delete->sibling;
             }
         }
-// eliberarea memoriei pentru lista de ref a nodului cu litera care se sterge
+        
         if (delete->referinte != NULL) {
             free(delete->referinte);
         }
-// eliberarea momoriei a modului care se sterge
         free(delete);
         delete = tree;
         tree = tree->parent;
     }
 } 
 
-// eliminarea fisierului de referinta
-void deleteRefFile(KeyTree tree, File *fisier) {
+/* Remove a file reference from all matching keywords in the Trie */
+void deleteRefFile(KeyTree tree, File *fisier) 
+{
     if (tree == NULL) {
         return;
     }
     KeyTree current = tree;
     while (current != NULL) {
-        if (current->end == 1) { // formeaza un cuvant
-// cautarea fisierului in lista de referinta a cuvantului gasit
+        if (current->end == 1) {
             ListRef list = current->referinte; 
             FileRef *currentRef = list->first;
             FileRef *delete = NULL;
@@ -211,33 +209,27 @@ void deleteRefFile(KeyTree tree, File *fisier) {
                 }
                 currentRef = currentRef->next;
             }
-            if (delete != NULL) { // am gasit fisierul
+            if (delete != NULL) {
                 if (list->first == list->last && list->first == delete) {
-// este singurul din lista
                     list->first = NULL;
                     list->last = NULL;
                 } else if (list->first == delete) {
-// este primul in lista
                     list->first = delete->next;
                     delete->next->prev = NULL;
-                } else if (list->last== delete) {
-// este ultimul in lista
+                } else if (list->last == delete) {
                     list->last = delete->prev;
                     delete->prev->next = NULL;
                 } else {
-// este la mijloc
                     delete->prev->next = delete->next;
                     delete->next->prev = delete->prev;
                 }
-// stergem fisierul din lista de referinta
+                
                 free(delete);
                 list->size--;
-                if (list->size == 0) { // nu mai exista fisiere cu acest cuvant
+                if (list->size == 0) {
                     current->end = 0;
-// verificam daca este prefix pentru alt cuvant
                     if(current->child == NULL) {
                         KeyTree frate = current->sibling;
-// stergem literele in plus
                         deleteLetter(current);
                         current = frate;
                     }
@@ -245,15 +237,14 @@ void deleteRefFile(KeyTree tree, File *fisier) {
                 }
             }
         }
-        if (current->child != NULL) { // repetam pentru cuvintele din copil
+        if (current->child != NULL) {
             deleteRefFile(current->child, fisier);
         }
-        current = current->sibling; // repetam pentru cuvintele din frate
+        current = current->sibling; 
     }
 }
 
-// gasirea unui cuvant-cheie in arbore si 
-// returnarea pointerului catre litera terminala
+/* Search for a keyword in the Trie and return the pointer to its terminal node */
 KeyTree findKeyWord(KeyTree tree, char *cuvant)
 {
     if (tree == NULL || tree->child == NULL) {
@@ -265,15 +256,15 @@ KeyTree findKeyWord(KeyTree tree, char *cuvant)
         char litera = cuvant[i];
         while (current->litera != litera) {
             if (current->sibling == NULL) {
-                return NULL; // nu exista litera
+                return NULL; 
             }
             current = current->sibling;
         }
         if (current->litera == litera && i != len - 1) {
             if (current->child == NULL) {
-                return NULL; // nu exista urmatoarea litera din cuvant
+                return NULL; 
             }
-            current = current->child; // trecem la cautarea urmatoarei litere
+            current = current->child; 
             continue;
         } else {
             break;
@@ -282,7 +273,7 @@ KeyTree findKeyWord(KeyTree tree, char *cuvant)
     return current;
 }
 
-// verificarea daca fisierul apartine listei de referinta a cuvantului
+/* Check if a file belongs to the reference list of a keyword */
 int containsFileRef(KeyTree tree, File *fisier)
 {
     if (tree == NULL) {
@@ -292,17 +283,16 @@ int containsFileRef(KeyTree tree, File *fisier)
     FileRef *current = list->first;
     while (current != NULL) {
         if (current->file == fisier) {
-            return 1; // am gasit fisierul
+            return 1; 
         }
         current = current->next;
     }
     return 0;
 }
 
-// eliminarea doar unui cuvant-cheie
+/* Remove a specific keyword association for a file */
 void deleteKeyWord(KeyTree tree, File *fisier)
 {
-// cautarea fisierului in lista de referinta a cuvantului gasit
     ListRef list = tree->referinte;
     FileRef *currentRef = list->first;
     FileRef *delete = NULL;
@@ -313,49 +303,43 @@ void deleteKeyWord(KeyTree tree, File *fisier)
         }
         currentRef = currentRef->next;
     }
-    if (delete != NULL) { // am gasit fisierul
+    if (delete != NULL) {
         if (list->first == list->last && list->first == delete) {
-// este singurul din lista
             list->first = NULL;
             list->last = NULL;
         } else if (list->first == delete) {
-// este primul in lista
             list->first = delete->next;
             delete->next->prev = NULL;
-        } else if (list->last== delete) {
-// este ultimul in lista
+        } else if (list->last == delete) {
             list->last = delete->prev;
             delete->prev->next = NULL;
         } else {
-// este la mijloc
                 delete->prev->next = delete->next;
                 delete->next->prev = delete->prev;
         }
-// stergem fisierul din lista de referinta
+        
         free(delete);
         list->size--;
-        if (list->size == 0) { // nu mai exista fisiere cu acest cuvant
+        if (list->size == 0) {
             tree->end = 0;
-// verificam daca este prefix pentru alt cuvant
             if(tree->child == NULL) {
-                deleteLetter(tree); // stergem literele in plus
+                deleteLetter(tree); 
             } 
         }
     }
 }
 
-// verificarea daca mai exista cuvinte pentru un anumit fisier
+/* Check if a file has any remaining keywords associated in the Trie */
 int KeyWordsFile(KeyTree tree, File *fisier)
 {
     if (tree == NULL) {
         return 0;
     }
-// cautare prin lista de referinta a literelor ce formeaza un cuvant
     if (tree->end == 1) {
         FileRef *current = tree->referinte->first;
         while (current != NULL) {
             if (current->file == fisier) {
-                return 1; // am gasit fisierul cautat
+                return 1; 
             }
             current = current->next;
         }
@@ -363,20 +347,19 @@ int KeyWordsFile(KeyTree tree, File *fisier)
     return KeyWordsFile(tree->child, fisier) + KeyWordsFile(tree->sibling, fisier);
 }
 
-// afisarea cuvintelor din arbore
-void printKeyWords(FILE* fout,  ListFile *listaFisiere, KeyTree tree,
+/* Recursively print all indexed keywords in lexicographical order */
+void printKeyWords(FILE* fout, ListFile *listaFisiere, KeyTree tree,
                    int idx_cuvant, char *cuvant, int *capacitate, int *nr_print)
 {
     if (tree == NULL) {
         return;
     }
-    cuvant[idx_cuvant] = tree->litera; // retinem litera
+    cuvant[idx_cuvant] = tree->litera; 
     cuvant[idx_cuvant + 1] = '\0';
-    if (tree->end == 1) { // am gasit un cuvant
+    if (tree->end == 1) {
         (*nr_print)++;
         fprintf(fout, "%s %d", cuvant, tree->referinte->size);
         if (tree->referinte->size != 0) {
-// afisam fisierele de referinta ale cuvantului
             FileRef *current = tree->referinte->first;
             for (int i = 0; i < tree->referinte->size; i++) {
                 fprintf(fout, " %s", current->file->id);
@@ -385,12 +368,12 @@ void printKeyWords(FILE* fout,  ListFile *listaFisiere, KeyTree tree,
             fprintf(fout, "\n");
         }
     }
-    idx_cuvant++; // trecem la urmatoarea litera din cuvant
+    idx_cuvant++; 
     printKeyWords(fout, listaFisiere, tree->child, idx_cuvant, cuvant, capacitate, nr_print);
     printKeyWords(fout, listaFisiere, tree->sibling, idx_cuvant - 1, cuvant, capacitate, nr_print);
 }
 
-// eliberarea memoriei arborelui
+/* Free all memory allocated for the Trie structure */
 void destroytKeyTree(KeyTree tree)
 {
 	if(tree == NULL) {
