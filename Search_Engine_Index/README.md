@@ -20,7 +20,7 @@ Pentru a garanta un timp de execuție optim, sistemul evită căutările liniare
 
 ## 📂 Structura Proiectului
 Codul este modularizat pentru a separa logica structurilor de date de comenzile sistemului:
-* `tema.c` - Punctul de intrare; citește datele și direcționează comenzile.
+* `main.c` - Punctul de intrare; citește datele și direcționează comenzile.
 * `tasks.h` - Implementarea logicii pentru fiecare comandă în parte.
 * `lista.h` - Definirea listei dublu înlănțuite pentru fișiere.
 * `arbore.h` - Implementarea arborelui de regăsire (Trie).
