@@ -1,5 +1,3 @@
-/*Vizdoaga Emilia-Ioana - 314CD*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
