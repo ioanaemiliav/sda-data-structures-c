@@ -1,7 +1,7 @@
 /*Vizdoaga Emilia-Ioana - 314CD*/
 
-#ifndef BONUS_H
-#define BONUS_H
+#ifndef PREFIX_H
+#define PREFIX_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,18 +9,18 @@
 #include "arbore.h"
 
 typedef struct filePrefix {
-    File *file; // retinem un pointer catre fisierul din lista
-    struct filePrefix *next; // urmatorul pointer la fisier
-    struct filePrefix *prev; // anteriorul pointer la fisier
+    File *file; 
+    struct filePrefix *next; 
+    struct filePrefix *prev; 
 } FilePrefix;
 
 typedef struct listPrefix {
-    int size; // numarul de fisiere din lista de referinta
+    int size; 
     FilePrefix *first;
     FilePrefix *last;
 } *ListPrefix;
 
-// crearea unei nod din lista
+/* Initialize a new node for the prefix results list */
 FilePrefix *createFilePrefix(File *fisier)
 {
     FilePrefix *file = malloc(sizeof(FilePrefix));
@@ -33,11 +33,12 @@ FilePrefix *createFilePrefix(File *fisier)
     return file;
 }
 
-// creearea listei cu pointeri
-ListPrefix createListPrefix(void) {
-    ListPrefix list = malloc(sizeof(struct listRef));
+/* Initialize an empty prefix results list */
+ListPrefix createListPrefix(void) 
+{
+    ListPrefix list = malloc(sizeof(struct listPrefix));
     if (list == NULL) {
-        return list;
+        return NULL;
     }
     list->size = 0;
     list->first = NULL;
@@ -45,34 +46,35 @@ ListPrefix createListPrefix(void) {
     return list;
 }
 
-// adaugarea unui pointer in lista
+/* Insert a file pointer into the prefix list in lexicographical order */
 void insertListPrefix(ListPrefix list, File *fisier)
-{   
-    if (list->size == 0) { // lista este goala
+{    
+    if (list->size == 0) {
         list->first = createFilePrefix(fisier);
-        list->last = list-> first ;
+        list->last = list->first;
         list->size++;
         return;
     }
+    
     FilePrefix *current = list->first; 
     while (current != NULL && strcmp(fisier->id, current->file->id) > 0) {
         current = current->next;
     }
-// current-> pointer la fisierul >= fisierul cautat, dpdv lexicografic 
+    
     if (current != NULL && strcmp(fisier->id, current->file->id) == 0) {
-        return; // fisierul exista deja in lista de referinta
+        return; 
     }
-// crearea structurii cu pointerul catre fisierul cautat
+    
     FilePrefix *new = createFilePrefix(fisier);
-    if (current == list->first) { // este primul in lista
+    if (current == list->first) {
         new->next = list->first;
         list->first->prev = new;
         list->first = new;
-    } else if (current == NULL) { // este ultimul in lista
+    } else if (current == NULL) {
         new->prev = list->last;
         list->last->next = new;
         list->last = new;
-    } else { // este la mijloc
+    } else {
         new->next = current;
         new->prev = current->prev;
         current->prev->next = new;
@@ -81,25 +83,25 @@ void insertListPrefix(ListPrefix list, File *fisier)
     list->size++;
 }
 
-// cautarea cuvintelor terminate in subarbore
+/* Recursively search the sub-tree for completed words matching the prefix */
 void findFilewithPrefix(ListPrefix lista, KeyTree tree)
 {
     if (tree == NULL) {
         return;
     }
-// verificam daca este un cuvant, are lista de referinta
+    
     if (tree->end == 1 && tree->referinte->size > 0) {
         FileRef *current = tree->referinte->first;
         while (current != NULL) {
-            insertListPrefix(lista, current->file); // adaugam fisierul
+            insertListPrefix(lista, current->file);
             current = current->next;
         }
     }
     findFilewithPrefix(lista, tree->child);
     findFilewithPrefix(lista, tree->sibling);
-
 }
 
+/* Free all memory allocated for the prefix list */
 void destroyListPrefix(ListPrefix list)
 {
     if (list == NULL) {
