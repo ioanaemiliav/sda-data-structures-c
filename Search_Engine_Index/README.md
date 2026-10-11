@@ -25,4 +25,4 @@ Codul este modularizat pentru a separa logica structurilor de date de comenzile 
 * `lista.h` - Definirea listei dublu înlănțuite pentru fișiere.
 * `arbore.h` - Implementarea arborelui de regăsire (Trie).
 * `max-heap.h` - Implementarea Heap-ului pentru interogările TOPK.
-* `bonus.h` - Logica de parcurgere a subarborilor pentru operația PREFIX.
+* `prefix.h` - Logica de parcurgere a subarborilor pentru operația PREFIX.
