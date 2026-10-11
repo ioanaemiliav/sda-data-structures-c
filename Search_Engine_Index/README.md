@@ -1,14 +1,11 @@
 # Sistem de Indexare a Fișierelor (Motor de Căutare)
 
 ## 📌 Despre Proiect
-Acest proiect implementează un sistem avansat de organizare și indexare a datelor, permițând regăsirea rapidă a fișierelor 
-pe baza unor cuvinte-cheie. Funcționează ca un motor de căutare simplificat: asociază cuvinte-cheie unor fișiere care au 
-un anumit scor de relevanță și permite interogări complexe pentru a găsi cele mai potrivite rezultate.
+Acest proiect implementează un sistem avansat de organizare și indexare a datelor, permițând regăsirea rapidă a fișierelor pe baza unor cuvinte-cheie. Funcționează ca un motor de căutare simplificat: asociază cuvinte-cheie unor fișiere care au un anumit scor de relevanță și permite interogări complexe pentru a găsi cele mai potrivite rezultate.
 
 ## 🛠️ Structuri de Date Utilizate
 Pentru a garanta un timp de execuție optim, sistemul evită căutările liniare, folosind în schimb structuri de date complexe:
-* **Arbore Multicăi de Regăsire (Trie):** Inima sistemului. Fiecare nod reprezintă o literă, iar drumul de la rădăcină spre
-* frunze formează cuvintele-cheie. Nodurile terminale conțin liste de referințe către fișierele care includ acel cuvânt.
+* **Arbore Multicăi de Regăsire (Trie):** Inima sistemului. Fiecare nod reprezintă o literă, iar drumul de la rădăcină spre frunze formează cuvintele-cheie. Nodurile terminale conțin liste de referințe către fișierele care includ acel cuvânt.
 * **Max-Heap:** Utilizat exclusiv pentru interogările de tip `TOPK`, pentru a extrage eficient și rapid cele mai relevante `K` fișiere în funcție de scorul lor (sau alfabetic, în caz de egalitate).
 * **Liste Dublu Înlănțuite:** Folosite pentru gestionarea memoriei globale a fișierelor și a metadatelor asociate.
 
