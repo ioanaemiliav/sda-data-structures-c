@@ -9,8 +9,7 @@ void comanda(FILE *fout, char* buff, ListEchipaje *listaEchipaje,
 			 QueueAsteptare *queue_medium, QueueAsteptare *queue_low,
 			 QueueDisponibilitate *queue_disp, ListInterventii 
 			 *listaInterventii, StackDispatch *stivaDispatch) 
-/* analizez fiecare operatie de ce comanda apartine 
-si apelez functia pentru comanda respectiva */
+/* Parse each operation and dispatch to the corresponding command handler */
 {
 	if (strncmp(buff, "ADD_INCIDENT", 12) == 0) {
 		add_incident(buff, listaIncidente, queue_high, 
@@ -46,22 +45,21 @@ void input(ListEchipaje *listaEchipaje, ListIncidente *listaIncidente,
 		   QueueAsteptare *queue_high, QueueAsteptare *queue_medium,
 		   QueueAsteptare *queue_low, QueueDisponibilitate *queue_disp,
 		   ListInterventii *listaInterventii, StackDispatch *stivaDispatch)
-//citesc si memorez datele de intrare
+/* Parse input data and initialize the system state */
 {
-	//deschid fisierul de citire
 	FILE *fin = fopen("tema1.in", "rt");
 	if (fin == NULL) {
 		return; 
 	}
-	//deschid fisierul de scriere
+	
 	FILE *fout = fopen("tema1.out", "wt");
 	if (fout == NULL) {
 		return; 
 	}
-// se va retine numarul de echipaje, apoi cel de operatii
+
 	int nr_echipaje, nr_operatii;
 	fscanf(fin, "%d", &nr_echipaje);
-// memorez fiecare echipaj citit
+
 	for (int i = 0; i < nr_echipaje; i++) {
 		int id;
 		char type;
@@ -69,6 +67,7 @@ void input(ListEchipaje *listaEchipaje, ListIncidente *listaIncidente,
 		insertEchipaj(listaEchipaje, id, type);
 		enqueueDisponibilitate(queue_disp, listaEchipaje->last);
 	}
+	
 	fscanf(fin, "%d ", &nr_operatii);
 	char *buff = malloc(100 * sizeof(char));
 	if (!buff) {
@@ -76,6 +75,7 @@ void input(ListEchipaje *listaEchipaje, ListIncidente *listaIncidente,
 		return;
 	}
 	buff[0] = '\0';
+	
 	for (int i = 0; i < nr_operatii; i++) {
 		fgets(buff, 100, fin);
 		buff[strcspn(buff, "\r\n")] = 0;
@@ -91,24 +91,20 @@ void input(ListEchipaje *listaEchipaje, ListIncidente *listaIncidente,
 
 int main(void)
 {
-// lista cu echipaje
 	ListEchipaje *listaEchipaje = createListEchipaje();
-// lista cu incidentele
 	ListIncidente *listaIncidente = createListIncidente();
-// cozile cu incidentele in asteptare
 	QueueAsteptare *queue_high = createQueueAsteptare(); 
 	QueueAsteptare *queue_medium = createQueueAsteptare();
 	QueueAsteptare *queue_low = createQueueAsteptare();
-// coada in care memorez echipajele disponibile
 	QueueDisponibilitate *queue_disp = createQueueDisponibilitate();
-// lista cu interventiile
 	ListInterventii *listaInterventii = createListInterventii();
-// stiva in care memorez interventiile
 	StackDispatch *stivaDispatch = createStack();
-// prelucrarea datele
+
+    // Start processing input commands
 	input(listaEchipaje, listaIncidente, queue_high, queue_medium,
 		  queue_low, queue_disp, listaInterventii, stivaDispatch);
-// eliberarea memoriei
+
+    // Free allocated memory to prevent memory leaks
 	destroyListEchipaje(listaEchipaje);
 	destroyListIncident(listaIncidente);
 	destroyQueueAsteptare(queue_high);
