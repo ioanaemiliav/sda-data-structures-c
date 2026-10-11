@@ -7,7 +7,7 @@
 #include "lista.h"
 #include "arbore.h"
 #include "max-heap.h"
-#include "bonus.h"
+#include "prefix.h"
 
 /* Parse input and add a new file with its keywords to the index */
 void add(char *buff, FILE *fout, ListFile *listaFisiere, KeyTree treeCuvinte)
